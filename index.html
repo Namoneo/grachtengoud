@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0a1330" />
+    <title>Grachtengoud</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <header id="topbar" class="panel" hidden>
+      <span class="brand">Grachtengoud</span>
+      <span class="stat"><span class="stat-label">Found</span> <b id="found">0/10</b></span>
+      <span class="stat"><span class="stat-label">Time</span> <b id="timer">00:00</b></span>
+      <span class="stat"
+        ><span class="stat-label">Score</span> <b id="score">0</b
+        ><span id="streak" class="streak" hidden></span></span
+      >
+      <span class="spacer"></span>
+      <button id="btn-cam" type="button" title="Switch camera (V)">
+        <span class="long">Camera</span><span class="short">Cam</span>
+      </button>
+      <button id="btn-map" type="button" title="City map (M)">
+        <span class="long">City map</span><span class="short">Map</span>
+      </button>
+      <button id="btn-log" type="button" title="Logbook (L)">
+        <span class="long">Logbook</span><span class="short">Log</span>
+      </button>
+      <button id="btn-keys" type="button" title="Keyboard hints (K)">
+        <span class="long">Keys</span><span class="short">?</span>
+      </button>
+    </header>
+
+    <ol id="board" class="panel" hidden></ol>
+    <div id="notice" class="panel" hidden></div>
+    <div id="toast" class="panel" hidden></div>
+    <div id="badge-toast" class="panel" hidden></div>
+    <article id="story-card" class="panel" hidden>
+      <h3 id="story-card-head"></h3>
+      <p id="story-card-keeper" class="keeper"></p>
+      <p id="story-card-text"></p>
+      <p class="small">Press any key to put the page away. It is kept in your logbook.</p>
+    </article>
+
+    <aside id="keys" class="panel" hidden>
+      <div class="log-head">
+        <h2>Controls</h2>
+        <button id="keys-close" type="button" aria-label="Close controls">Close</button>
+      </div>
+      <dl class="keylist" id="keys-keyboard">
+        <div><dt><kbd>W</kbd> <kbd>↑</kbd></dt><dd>Walk forward</dd></div>
+        <div><dt><kbd>S</kbd> <kbd>↓</kbd></dt><dd>Walk back</dd></div>
+        <div><dt><kbd>A</kbd> <kbd>D</kbd> <kbd>←</kbd> <kbd>→</kbd></dt><dd>Turn</dd></div>
+        <div><dt><kbd>Shift</kbd></dt><dd>Hold to run (detector off)</dd></div>
+        <div><dt><kbd>C</kbd></dt><dd>Bend over / stand up</dd></div>
+        <div><dt><kbd>Space</kbd> <kbd>E</kbd></dt><dd>Dig (while bent over)</dd></div>
+        <div><dt><kbd>V</kbd></dt><dd>Switch camera</dd></div>
+        <div><dt><kbd>M</kbd></dt><dd>City map</dd></div>
+        <div><dt><kbd>L</kbd></dt><dd>Logbook: riddles, story, badges</dd></div>
+        <div><dt><kbd>K</kbd></dt><dd>Show these hints</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>Close panels</dd></div>
+      </dl>
+      <dl class="keylist" id="keys-touch" hidden>
+        <div><dt>Joystick</dt><dd>Up and down to walk, left and right to turn</dd></div>
+        <div><dt class="pink">Run</dt><dd>Hold to run (detector off)</dd></div>
+        <div><dt class="cyan">Bend</dt><dd>Bend over / stand up</dd></div>
+        <div><dt class="gold">Dig</dt><dd>Dig while bent over</dd></div>
+        <div><dt>Top bar</dt><dd>Camera, city map, logbook</dd></div>
+      </dl>
+    </aside>
+
+    <section id="panel" class="panel" hidden>
+      <div class="row">
+        <span id="mode" class="mode">Standing</span>
+        <span id="bars" class="bars" aria-label="Signal strength"><i></i><i></i><i></i><i></i></span>
+        <span id="arrow" class="arrow" hidden>
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <path d="M12 2 L20 20 L12 15.5 L4 20 Z" fill="currentColor" />
+          </svg>
+        </span>
+        <span id="message" class="message" role="status"></span>
+      </div>
+      <div class="row">
+        <span id="stamina-label" class="stamina-label">Stamina</span>
+        <span class="stamina"><i id="stamina"></i></span>
+      </div>
+    </section>
+
+    <aside id="logbook" class="panel" hidden>
+      <div class="log-head">
+        <div class="tabs" role="tablist">
+          <button id="tab-riddles" type="button" role="tab" class="on">Riddles</button>
+          <button id="tab-story" type="button" role="tab">Story <span id="story-count"></span></button>
+          <button id="tab-badges" type="button" role="tab">Badges <span id="badge-count"></span></button>
+        </div>
+        <button id="log-close" type="button" aria-label="Close logbook">Close</button>
+      </div>
+      <ol id="riddles"></ol>
+      <div id="story" hidden></div>
+      <ul id="badges" hidden></ul>
+    </aside>
+
+    <div id="touch" hidden>
+      <div id="stick" class="stick"><div id="knob" class="knob"></div></div>
+      <div class="pads">
+        <button id="t-run" type="button" class="pad run">Run</button>
+        <button id="t-bend" type="button" class="pad bend">Bend</button>
+        <button id="t-dig" type="button" class="pad dig">Dig</button>
+      </div>
+    </div>
+
+    <div id="loading" class="screen">
+      <div class="card">
+        <h1>Grachtengoud</h1>
+        <div class="spinner"></div>
+        <p id="loading-text">Loading…</p>
+      </div>
+    </div>
+
+    <div id="start" class="screen" hidden>
+      <div class="card">
+        <h1>Grachtengoud</h1>
+        <p class="lead">
+          Ten caches of canal gold lie buried near Amsterdam’s landmarks. Solve the riddles in your
+          logbook, follow the detector, and dig them all up.
+        </p>
+        <ul class="how">
+          <li><b>Walk</b><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows. The detector shows signal strength within 300 m, but no direction.</span></li>
+          <li><b class="pink">Run</b><span>Hold <kbd>Shift</kbd>. Fast, but the detector is off and stamina drains.</span></li>
+          <li><b class="cyan">Bend over</b><span><kbd>C</kbd>. Slow, but within 90 m you get the exact distance and an arrow.</span></li>
+          <li><b class="gold">Dig</b><span><kbd>Space</kbd> or <kbd>E</kbd> while bent over, within 12 m of a cache.</span></li>
+        </ul>
+        <p class="small">
+          <kbd>V</kbd> camera · <kbd>M</kbd> city map · <kbd>L</kbd> logbook. Coins on the streets and
+          quick finds in a row raise your score. On a phone, use the joystick and the round buttons.
+        </p>
+        <div class="choices">
+          <button id="btn-start" type="button" class="cta">Free hunt</button>
+          <button id="btn-daily" type="button" class="cta alt">Daily hunt</button>
+          <button id="btn-mp" type="button" class="cta alt">Multiplayer</button>
+        </div>
+        <p id="best-start" class="small"></p>
+      </div>
+    </div>
+
+    <div id="prologue" class="screen" hidden>
+      <div class="card">
+        <h1 id="prologue-title"></h1>
+        <p id="prologue-text" class="lead story-text"></p>
+        <button id="btn-begin" type="button" class="cta">Begin the hunt</button>
+      </div>
+    </div>
+
+    <div id="mp" class="screen" hidden>
+      <div class="card">
+        <h1>Multiplayer race</h1>
+        <p class="lead">
+          Everyone hunts the same ten caches. Each one goes to whoever digs it up first.
+        </p>
+        <div id="mp-setup">
+          <label class="field"
+            ><span>Your name</span>
+            <input id="mp-name" type="text" maxlength="16" autocomplete="off" spellcheck="false"
+          /></label>
+          <div class="mp-actions">
+            <button id="mp-create" type="button" class="cta">Create a room</button>
+            <span class="or">or</span>
+            <label class="field code"
+              ><span>Room code</span>
+              <input id="mp-code" type="text" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false"
+            /></label>
+            <button id="mp-join" type="button" class="cta alt">Join</button>
+          </div>
+        </div>
+        <div id="mp-room" hidden>
+          <p class="room">Room <b id="mp-room-code"></b></p>
+          <button id="mp-copy" type="button">Copy invite link</button>
+          <ul id="mp-players" class="players"></ul>
+          <button id="mp-go" type="button" class="cta" hidden>Start the race</button>
+          <p id="mp-wait" class="small" hidden>Waiting for the host to start…</p>
+        </div>
+        <p id="mp-status" class="small" role="status"></p>
+        <button id="mp-back" type="button">Back</button>
+        <p class="small">
+          Players connect directly to each other. A free public service (PeerJS) is used only to
+          introduce the browsers.
+        </p>
+      </div>
+    </div>
+
+    <div id="win" class="screen" hidden>
+      <div class="card">
+        <h1 id="win-title">All ten found</h1>
+        <p id="win-lead" class="lead">The canal gold is yours.</p>
+        <dl class="result">
+          <div><dt>Time</dt><dd id="win-time">00:00</dd></div>
+          <div><dt>Score</dt><dd id="win-score">0</dd></div>
+          <div><dt>Hints used</dt><dd id="win-hints">0</dd></div>
+          <div><dt id="win-best-label">Best time</dt><dd id="win-best">00:00</dd></div>
+        </dl>
+        <p class="rank">Rank: <b id="win-rank"></b></p>
+        <p id="win-story" class="story-text"></p>
+        <ol id="win-standings" class="players" hidden></ol>
+        <button id="btn-again" type="button" class="cta">Back to start</button>
+      </div>
+    </div>
+
+    <div id="error" class="screen" hidden>
+      <div class="card">
+        <h1>Something went wrong</h1>
+        <p id="error-text" class="lead"></p>
+        <button id="btn-reload" type="button" class="cta">Reload</button>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
